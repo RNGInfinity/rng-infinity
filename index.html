@@ -187,10 +187,21 @@ function renderLeaderboard(){
 }
 
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function stopAutoRoll(){
+ autoRollEnabled=false;clearInterval(autoRollTimer);autoRollTimer=null;saveGame();
+}
 function toggleAutoRoll(){
- if(rolls<100)return;autoRollEnabled=!autoRollEnabled;saveGame();
- if(autoRollEnabled){autoRollTimer=setInterval(()=>{if(!rollingNow&& !$('rollOverlay').classList.contains('open'))roll()},1500)}
- else{clearInterval(autoRollTimer);autoRollTimer=null}
+ if(rolls<100)return;
+ if(autoRollEnabled){stopAutoRoll();return}
+ autoRollEnabled=true;saveGame();
+ clearInterval(autoRollTimer);
+ autoRollTimer=setInterval(()=>{
+  if(!autoRollEnabled||rollingNow||!activeUsername)return;
+  if($('rollOverlay').classList.contains('open')){
+   $('rollOverlay').classList.remove('open');document.body.style.overflow='';
+  }
+  roll();
+ },1500);
 }
 function setGateStatus(message,isError=false){$('gateStatus').textContent=message;$('gateStatus').style.color=isError?'#ff8585':'var(--accent)'}
 document.querySelectorAll('[data-board]').forEach(btn=>btn.addEventListener('click',()=>{activeBoard=btn.dataset.board;document.querySelectorAll('[data-board]').forEach(b=>{const on=b===btn;b.classList.toggle('active',on);b.setAttribute('aria-selected',String(on))});renderLeaderboard()}));
@@ -278,13 +289,13 @@ function roll(){
  $('overlayKicker').textContent='UNLIMITED ROLL';$('overlayTitle').textContent='Rolling for rarity...';$('overlaySub').textContent='Watch the numbers spin...';$('overlayOrb').textContent='🎲';$('overlayRarity').textContent='ROLLING';$('overlayRarity').style.color='#e7edf5';$('overlayPoints').textContent='Calculating your score...';$('overlayBadges').innerHTML='';$('overlayClose').disabled=true;$('overlayClose').textContent='Rolling...';
  db.innerHTML=String(n).padStart(6,'0').split('').map(()=>'<span class="overlay-digit spinning">0</span>').join('');
  overlay.classList.add('open');document.body.style.overflow='hidden';
- const digits=[...db.children];let ticks=0;const spin=setInterval(()=>{ticks++;digits.forEach(el=>el.textContent=String(Math.floor(Math.random()*10)));if(ticks>=18){clearInterval(spin);digits.forEach((el,i)=>{el.classList.remove('spinning');el.textContent=String(n).padStart(6,'0')[i]});$('overlayTitle').textContent=n.toLocaleString();$('overlaySub').textContent='Your roll is in. Here is what you found.';$('overlayOrb').textContent=tier.orb;$('overlayRarity').textContent=tier.name;$('overlayRarity').style.color=tier.color;$('overlayPoints').textContent=score+' points · '+tier.range;$('overlayBadges').innerHTML=badges.map(b=>`<span class="badge" title="${b.desc}">${b.name} <b>+${b.pts}</b></span>`).join('');$('overlayKicker').textContent='RARITY UNLOCKED';$('overlayClose').disabled=false;$('overlayClose').textContent='Continue';rollingNow=false}},75);
+ const digits=[...db.children];let ticks=0;const spin=setInterval(()=>{ticks++;digits.forEach(el=>el.textContent=String(Math.floor(Math.random()*10)));if(ticks>=18){clearInterval(spin);digits.forEach((el,i)=>{el.classList.remove('spinning');el.textContent=String(n).padStart(6,'0')[i]});$('overlayTitle').textContent=n.toLocaleString();$('overlaySub').textContent='Your roll is in. Here is what you found.';$('overlayOrb').textContent=tier.orb;$('overlayRarity').textContent=tier.name;$('overlayRarity').style.color=tier.color;$('overlayPoints').textContent=score+' points · '+tier.range;$('overlayBadges').innerHTML=badges.map(b=>`<span class="badge" title="${b.desc}">${b.name} <b>+${b.pts}</b></span>`).join('');$('overlayKicker').textContent='RARITY UNLOCKED';$('overlayClose').disabled=false;$('overlayClose').textContent=autoRollEnabled?'STOP AUTO ROLL':'Continue';rollingNow=false}},75);
  rolls++;best=Math.max(best,score);badges.forEach(b=>found.add(b.name));renderNumber(n);$('rolls').textContent=rolls;$('best').textContent=best;$('badgesCount').textContent=found.size;$('result').classList.add('show');$('resultTitle').textContent=`${n.toLocaleString()} · ${score} points`;$('tier').textContent=tierName;$('badges').innerHTML=badges.map(b=>`<span class="badge" title="${b.desc}">${b.name} <b>+${b.pts}</b></span>`).join('');history.unshift({n,score,tier:tierName,badges:badges.length});history=history.slice(0,8);renderHistory();showRarity(tierIndex);saveGame();
 }
 function renderHistory(){const el=$('history');if(!history.length){el.innerHTML='<div class="empty">Your rolls will show up here. Go on, try your luck.</div>';return}
  el.innerHTML=history.map(h=>`<div class="history-row"><div><div class="history-num">${String(h.n).padStart(6,'0')}</div><div class="history-meta">${h.badges} badge${h.badges===1?'':'s'} · ${h.tier}</div></div><div class="history-points">+${h.score} pts</div></div>`).join('')}
 $('roll').addEventListener('click',roll);
-$('overlayClose').addEventListener('click',()=>{if(rollingNow)return;$('rollOverlay').classList.remove('open');document.body.style.overflow=''});
+$('overlayClose').addEventListener('click',()=>{if(rollingNow)return;if(autoRollEnabled)stopAutoRoll();$('rollOverlay').classList.remove('open');document.body.style.overflow=''});
 $('clear').addEventListener('click',()=>{history=[];renderHistory()});
 bootSavedProgress();
 </script>
