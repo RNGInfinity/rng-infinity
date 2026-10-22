@@ -256,12 +256,12 @@ function bootSavedProgress(){
 
 
 const rarityTiers=[
- {name:'COMMON',min:0,max:24,range:'0–24 points',color:'#aab3c0',glow:'#aab3c066',orb:'⚪',desc:'A normal roll. The first step on a much longer hunt.'},
- {name:'UNCOMMON',min:25,max:44,range:'25–44 points',color:'#69ed91',glow:'#69ed9188',orb:'🟢',desc:'A few interesting traits line up.'},
- {name:'RARE',min:45,max:74,range:'45–74 points',color:'#49baff',glow:'#49baff99',orb:'🔵',desc:'A meaningful combination of number properties.'},
- {name:'EPIC',min:75,max:109,range:'75–109 points',color:'#c27aff',glow:'#c27aff99',orb:'🟣',desc:'Several strong patterns combine in one roll.'},
- {name:'LEGENDARY',min:110,max:139,range:'110–139 points',color:'#ffbd4a',glow:'#ffbd4a99',orb:'🟠',desc:'A rare stack of valuable number properties.'},
- {name:'MYTHICAL',min:140,max:Infinity,range:'140+ points',color:'#ff6fd8',glow:'#ff6fd8aa',orb:'🌈',desc:'The highest tier, reserved for exceptional combinations.'}
+ {name:'COMMON',min:0,max:74,range:'0–74 points',color:'#aab3c0',glow:'#aab3c066',orb:'⚪',desc:'A normal roll. The first step on a much longer hunt.'},
+ {name:'UNCOMMON',min:75,max:124,range:'75–124 points',color:'#69ed91',glow:'#69ed9188',orb:'🟢',desc:'A few interesting traits line up.'},
+ {name:'RARE',min:125,max:224,range:'125–224 points',color:'#49baff',glow:'#49baff99',orb:'🔵',desc:'A meaningful combination of number properties.'},
+ {name:'EPIC',min:225,max:349,range:'225–349 points',color:'#c27aff',glow:'#c27aff99',orb:'🟣',desc:'Several strong patterns combine in one roll.'},
+ {name:'LEGENDARY',min:350,max:499,range:'350–499 points',color:'#ffbd4a',glow:'#ffbd4a99',orb:'🟠',desc:'A rare stack of valuable number properties.'},
+ {name:'MYTHICAL',min:500,max:Infinity,range:'500+ points',color:'#ff6fd8',glow:'#ff6fd8aa',orb:'🌈',desc:'The highest tier, reserved for exceptional combinations.'}
 ];
 let rarityIndex=0,rarityTimer=null;
 function showRarity(i){
@@ -359,7 +359,7 @@ function analyze(n){
  if(out.length===0)add('🍀 Quiet Classic',2,'A roll with its own kind of luck');
  return out;
 }
-function tierFor(score){if(score>=140)return'MYTHICAL';if(score>=110)return'LEGENDARY';if(score>=75)return'EPIC';if(score>=45)return'RARE';if(score>=25)return'UNCOMMON';return'COMMON'}
+function tierFor(score){if(score>=500)return'MYTHICAL';if(score>=350)return'LEGENDARY';if(score>=225)return'EPIC';if(score>=125)return'RARE';if(score>=75)return'UNCOMMON';return'COMMON'}
 function renderNumber(n){$('number').innerHTML=String(n).padStart(6,'0').split('').map(x=>`<span class="digit">${x}</span>`).join('')}
 function getRandomRoll(){const max=1000001;if(!globalThis.crypto?.getRandomValues)return Math.floor(Math.random()*max);const arr=new Uint32Array(1),limit=Math.floor(4294967296/max)*max;let x;do{crypto.getRandomValues(arr);x=arr[0]}while(x>=limit);return x%max}
 function roll(){
