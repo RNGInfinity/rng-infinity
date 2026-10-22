@@ -256,12 +256,12 @@ function bootSavedProgress(){
 
 
 const rarityTiers=[
- {name:'COMMON',min:0,max:9,range:'0–9 points',color:'#aab3c0',glow:'#aab3c066',orb:'⚪',desc:'A normal roll. The first step on a much longer hunt.'},
- {name:'UNCOMMON',min:10,max:24,range:'10–24 points',color:'#69ed91',glow:'#69ed9188',orb:'🟢',desc:'A few interesting traits line up.'},
- {name:'RARE',min:25,max:44,range:'25–44 points',color:'#49baff',glow:'#49baff99',orb:'🔵',desc:'A meaningful combination of number properties.'},
- {name:'EPIC',min:45,max:74,range:'45–74 points',color:'#c27aff',glow:'#c27aff99',orb:'🟣',desc:'Several strong patterns combine in one roll.'},
- {name:'LEGENDARY',min:75,max:119,range:'75–119 points',color:'#ffbd4a',glow:'#ffbd4a99',orb:'🟠',desc:'A rare stack of valuable number properties.'},
- {name:'MYTHICAL',min:120,max:Infinity,range:'120+ points',color:'#ff6fd8',glow:'#ff6fd8aa',orb:'🌈',desc:'The highest tier, reserved for exceptional combinations.'}
+ {name:'COMMON',min:0,max:6,range:'0–6 points',color:'#aab3c0',glow:'#aab3c066',orb:'⚪',desc:'A normal roll. The first step on a much longer hunt.'},
+ {name:'UNCOMMON',min:7,max:12,range:'7–12 points',color:'#69ed91',glow:'#69ed9188',orb:'🟢',desc:'A few interesting traits line up.'},
+ {name:'RARE',min:13,max:19,range:'13–19 points',color:'#49baff',glow:'#49baff99',orb:'🔵',desc:'A meaningful combination of number properties.'},
+ {name:'EPIC',min:20,max:29,range:'20–29 points',color:'#c27aff',glow:'#c27aff99',orb:'🟣',desc:'Several strong patterns combine in one roll.'},
+ {name:'LEGENDARY',min:30,max:44,range:'30–44 points',color:'#ffbd4a',glow:'#ffbd4a99',orb:'🟠',desc:'A rare stack of valuable number properties.'},
+ {name:'MYTHICAL',min:45,max:Infinity,range:'45+ points',color:'#ff6fd8',glow:'#ff6fd8aa',orb:'🌈',desc:'The highest tier, reserved for exceptional combinations.'}
 ];
 let rarityIndex=0,rarityTimer=null;
 function showRarity(i){
@@ -290,7 +290,7 @@ let rolls=0,best=0,found=new Set(),history=[],rollingNow=false;
 const isPrime=n=>{if(n<2)return false;if(n%2===0)return n===2;for(let i=3;i*i<=n;i+=2)if(n%i===0)return false;return true};
 function analyze(n){
  const s=String(n), d=[...s].map(Number), sum=d.reduce((a,b)=>a+b,0), out=[];
- const add=(name,pts,desc)=>out.push({name,pts,desc});
+ const add=(name,pts,desc)=>out.push({name,pts:Math.max(1,Math.round(pts*0.4)),desc});
  // Number theory: common classifications are worth little; rarer structures score more.
  if(n%2===0)add('↔️ Even Number',1,'Divisible by two');
  else add('↗️ Odd Number',1,'Not divisible by two');
@@ -359,7 +359,7 @@ function analyze(n){
  if(out.length===0)add('🍀 Quiet Classic',2,'A roll with its own kind of luck');
  return out;
 }
-function tierFor(score){if(score>=120)return'MYTHICAL';if(score>=75)return'LEGENDARY';if(score>=45)return'EPIC';if(score>=25)return'RARE';if(score>=10)return'UNCOMMON';return'COMMON'}
+function tierFor(score){if(score>=45)return'MYTHICAL';if(score>=30)return'LEGENDARY';if(score>=20)return'EPIC';if(score>=13)return'RARE';if(score>=7)return'UNCOMMON';return'COMMON'}
 function renderNumber(n){$('number').innerHTML=String(n).padStart(6,'0').split('').map(x=>`<span class="digit">${x}</span>`).join('')}
 function getRandomRoll(){const max=1000001;if(!globalThis.crypto?.getRandomValues)return Math.floor(Math.random()*max);const arr=new Uint32Array(1),limit=Math.floor(4294967296/max)*max;let x;do{crypto.getRandomValues(arr);x=arr[0]}while(x>=limit);return x%max}
 function roll(){
