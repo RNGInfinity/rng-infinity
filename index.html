@@ -169,8 +169,29 @@ async function createAccount(){
  localStorage.setItem(USERS_KEY,JSON.stringify(users));activeUsername=name.toLowerCase();localStorage.setItem(SESSION_KEY,activeUsername);
  restoreStats(users[activeUsername].stats);updateAccountUI();setAccountStatus('Account created. Your progress will save in this browser.');saveGame();$('authGate').hidden=true;$('gatePasscode').value='';
 }
+function migrateLegacyProgress(users){
+ let changed=false;
+ for(const user of Object.values(users)){
+  if(!user||!user.stats)continue;
+  const stats=user.stats;
+  const oldXP=Math.max(0,Number(stats.xp)||0);
+  const oldCoins=Math.max(0,Number(stats.coins)||0);
+  const rolls=Math.max(0,Math.floor(Number(stats.rolls)||0));
+  const targetXP=Math.max(oldXP,rolls);
+  const oldLevel=levelFromXP(oldXP),targetLevel=levelFromXP(targetXP);
+  if(targetXP>oldXP){
+   stats.xp=targetXP;
+   let bonus=0;
+   for(let level=oldLevel+1;level<=targetLevel;level++)bonus+=25+level*10;
+   stats.coins=oldCoins+bonus;
+   changed=true;
+  }
+ }
+ if(changed){try{localStorage.setItem(USERS_KEY,JSON.stringify(users))}catch{}}
+}
 async function loginAccount(){
  const name=$('accountUsername').value.trim().toLowerCase(),pass=$('accountPasscode').value,users=safeRead(USERS_KEY,{});
+ migrateLegacyProgress(users);
  if(!users[name]||users[name].passHash!==await hashPasscode(pass)){setAccountStatus('Username or passcode is incorrect for this browser.',true);return}
  activeUsername=name;localStorage.setItem(SESSION_KEY,name);restoreStats(users[name].stats);updateAccountUI();setAccountStatus('Welcome back! Your saved progress has been loaded.');renderLeaderboard();$('authGate').hidden=true;$('gatePasscode').value='';
 }
