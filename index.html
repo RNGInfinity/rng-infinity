@@ -141,6 +141,7 @@ footer{text-align:center;color:#626c7d;font-size:11px;margin-top:45px}
   <button class="leader-tab active" data-board="rolls" role="tab" aria-selected="true">🎲 Rolls</button>
   <button class="leader-tab" data-board="time" role="tab" aria-selected="false">⏱ Play time</button>
   <button class="leader-tab" data-board="points" role="tab" aria-selected="false">⭐ Points</button>
+  <button class="leader-tab" data-board="coins" role="tab" aria-selected="false">🪙 Coins</button>
  </div>
  <div id="leaderboardRows"><div class="empty">Sign in and play to appear here.</div></div>
  <p class="muted-note">Points shows the exact highest score earned. This leaderboard is stored in this browser; a shared leaderboard needs an online database.</p>
@@ -237,10 +238,10 @@ function updateAutoRollUI(){
 }
 function formatPlayTime(seconds){seconds=Math.max(0,Math.floor(seconds||0));const h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60),s=seconds%60;return h?`${h}h ${m}m`:m?`${m}m ${s}s`:`${s}s`}
 function renderLeaderboard(){
- const users=safeRead(USERS_KEY,{});let rows=Object.values(users).map(u=>({username:u.username,rolls:Number(u.stats?.rolls)||0,best:Number(u.stats?.best)||0,playTime:Number(u.stats?.playTime)||0}));
- if(activeUsername&&!rows.some(u=>u.username.toLowerCase()===activeUsername)){rows.push({username:activeUsername,rolls,best,playTime:0})}
- const metric=activeBoard==='time'?'playTime':activeBoard==='points'?'best':'rolls';rows.sort((a,b)=>b[metric]-a[metric]||a.username.localeCompare(b.username));rows=rows.slice(0,10);
- $('leaderboardRows').innerHTML=rows.length?rows.map((u,i)=>{const score=activeBoard==='time'?formatPlayTime(u.playTime):activeBoard==='points'?`${u.best.toLocaleString()} points`:`${u.rolls.toLocaleString()} rolls`;const sub=activeBoard==='time'?`${u.rolls.toLocaleString()} rolls`:activeBoard==='points'?`Exact score: ${u.best}`:`Best: ${u.best.toLocaleString()} points`;return `<div class="leader-row"><div class="leader-rank">#${i+1}</div><div class="leader-name">${escapeHtml(u.username)}</div><div class="leader-score"><span class="exact-points">${score}</span><small>${sub}</small></div></div>`}).join(''):'<div class="empty">Create a profile and play to appear here.</div>';
+ const users=safeRead(USERS_KEY,{});let rows=Object.values(users).map(u=>({username:u.username,rolls:Number(u.stats?.rolls)||0,best:Number(u.stats?.best)||0,coins:Number(u.stats?.coins)||0,playTime:Number(u.stats?.playTime)||0}));
+ if(activeUsername&&!rows.some(u=>u.username.toLowerCase()===activeUsername)){rows.push({username:activeUsername,rolls,best,coins,playTime:0})}
+ const metric=activeBoard==='time'?'playTime':activeBoard==='points'?'best':activeBoard==='coins'?'coins':'rolls';rows.sort((a,b)=>b[metric]-a[metric]||a.username.localeCompare(b.username));rows=rows.slice(0,10);
+ $('leaderboardRows').innerHTML=rows.length?rows.map((u,i)=>{const score=activeBoard==='time'?formatPlayTime(u.playTime):activeBoard==='points'?`${u.best.toLocaleString()} points`:activeBoard==='coins'?`${u.coins.toLocaleString()} coins`:`${u.rolls.toLocaleString()} rolls`;const sub=activeBoard==='time'?`${u.rolls.toLocaleString()} rolls`:activeBoard==='points'?`Exact score: ${u.best}`:activeBoard==='coins'?'Current coin balance':`Best: ${u.best.toLocaleString()} points`;return `<div class="leader-row"><div class="leader-rank">#${i+1}</div><div class="leader-name">${escapeHtml(u.username)}</div><div class="leader-score"><span class="exact-points">${score}</span><small>${sub}</small></div></div>`}).join(''):'<div class="empty">Create a profile and play to appear here.</div>';
 }
 
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
