@@ -317,8 +317,8 @@ function bootSavedProgress(){
  restoreStats({rolls:0,best:0,found:[],history:[],autoRollEnabled:false});
  updateAccountUI();
  setAccountStatus('Sign in to load your profile.');
- // Rolling is available to guests; signing in is optional for a named local profile.
- $('authGate').hidden=true;
+ // Show the account page on every fresh load so returning players can sign in.
+ $('authGate').hidden=false;
  renderLeaderboard();
 }
 
