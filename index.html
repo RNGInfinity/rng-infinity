@@ -391,6 +391,7 @@ function analyze(n){
  if(s==='000000')add('🕳️ Secret Zero',1200,'Rank #3: the six-zero secret roll');
  if(s==='888888')add('♾️ Secret Eights',1400,'Rank #2: the six-eight secret roll');
  if(s==='777777')add('👑 Secret Sevens',1600,'Rank #1: the ultimate six-seven roll');
+ if(s==='777777')add('🏅 777777 Badge',0,'Awarded for rolling 777777');
  const runs=[];let run=1;for(let i=1;i<d.length;i++){if(d[i]===d[i-1])run++;else{runs.push(run);run=1}}runs.push(run);
  const longestRun=Math.max(...runs);
  if(longestRun>=6){const secretDigit=d[0];add('🔮 Secret '+(s.length===6&&d.every(x=>x===secretDigit)?'Number':'Sequence'),1000,'Secret badge for an extraordinarily rare six-digit pattern');}
