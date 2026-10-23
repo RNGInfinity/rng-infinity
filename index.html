@@ -301,7 +301,8 @@ const rarityTiers=[
  {name:'RARE',min:125,max:224,range:'125–224 points',color:'#49baff',glow:'#49baff99',orb:'🔵',desc:'A meaningful combination of number properties.'},
  {name:'EPIC',min:225,max:349,range:'225–349 points',color:'#c27aff',glow:'#c27aff99',orb:'🟣',desc:'Several strong patterns combine in one roll.'},
  {name:'LEGENDARY',min:350,max:499,range:'350–499 points',color:'#ffbd4a',glow:'#ffbd4a99',orb:'🟠',desc:'A rare stack of valuable number properties.'},
- {name:'MYTHICAL',min:500,max:Infinity,range:'500+ points',color:'#ff6fd8',glow:'#ff6fd8aa',orb:'🌈',desc:'The highest tier, reserved for exceptional combinations.'}
+ {name:'MYTHICAL',min:500,max:Infinity,range:'500+ points',color:'#ff6fd8',glow:'#ff6fd8aa',orb:'🌈',desc:'The highest tier, reserved for exceptional combinations.'},
+ {name:'SECRET',min:1001,max:Infinity,range:'1,001+ points · ultra-rare patterns',color:'#ffffff',glow:'#d8b4ffcc',orb:'🔮',desc:'Hidden rarity for extraordinary rolls with six identical digits or a six-digit run.'}
 ];
 let rarityIndex=0,rarityTimer=null;
 function showRarity(i){
@@ -342,8 +343,12 @@ function analyze(n){
  if(n>0&&n<=1000000){let a=0,b=1;while(b<n){const next=a+b;a=b;b=next}if(n===b||n===0)add('🌀 Fibonacci Number',28,'Appears in the Fibonacci sequence')}
  if(s.length>=2&&s===s.split('').reverse().join(''))add('🪞 Palindrome',20,'Reads the same backwards');
  if(s.length>=2&&d.every(x=>x===d[0]))add('🔁 All the Same',85,'Every digit matches');
+ if(s==='000000')add('🕳️ Secret Zero',1200,'Rank #3: the six-zero secret roll');
+ if(s==='888888')add('♾️ Secret Eights',1400,'Rank #2: the six-eight secret roll');
+ if(s==='777777')add('👑 Secret Sevens',1600,'Rank #1: the ultimate six-seven roll');
  const runs=[];let run=1;for(let i=1;i<d.length;i++){if(d[i]===d[i-1])run++;else{runs.push(run);run=1}}runs.push(run);
  const longestRun=Math.max(...runs);
+ if(longestRun>=6)add('🔮 Secret Sequence',1100,'Six identical digits in a row unlock the Secret rarity');
  if(longestRun>=2)add('👯 Double Take',4,'At least two identical digits sit together');
  if(longestRun>=3)add('👯‍♂️ Triple Stack',12,'Three identical digits in a row');
  if(longestRun>=4)add('🧬 Quad Stack',28,'Four identical digits in a row');
@@ -399,14 +404,14 @@ function analyze(n){
  if(out.length===0)add('🍀 Quiet Classic',2,'A roll with its own kind of luck');
  return out;
 }
-function tierFor(score){if(score>=500)return'MYTHICAL';if(score>=350)return'LEGENDARY';if(score>=225)return'EPIC';if(score>=125)return'RARE';if(score>=75)return'UNCOMMON';return'COMMON'}
+function tierFor(score){if(score>=1001)return'SECRET';if(score>=500)return'MYTHICAL';if(score>=350)return'LEGENDARY';if(score>=225)return'EPIC';if(score>=125)return'RARE';if(score>=75)return'UNCOMMON';return'COMMON'}
 function renderNumber(n){$('number').innerHTML=String(n).padStart(6,'0').split('').map(x=>`<span class="digit">${x}</span>`).join('')}
 function getRandomRoll(){const max=1000001;if(!globalThis.crypto?.getRandomValues)return Math.floor(Math.random()*max);const arr=new Uint32Array(1),limit=Math.floor(4294967296/max)*max;let x;do{crypto.getRandomValues(arr);x=arr[0]}while(x>=limit);return x%max}
 function roll(){
  if(!activeUsername){$('authGate').hidden=false;setGateStatus('Please sign in before rolling.',true);return}
  if(rollingNow)return;rollingNow=true;
  const chainMultiplier=awardRollProgress();
- const n=getRandomRoll(),badges=analyze(n),baseScore=badges.reduce((a,b)=>a+b.pts,0),score=Math.round(baseScore*chainMultiplier),tierName=tierFor(score),tierIndex=Math.max(0,rarityTiers.findIndex(t=>t.name===tierName)),tier=rarityTiers[tierIndex];
+ const n=getRandomRoll(),badges=analyze(n),baseScore=badges.reduce((a,b)=>a+b.pts,0),score=Math.round(baseScore*chainMultiplier),tierName=(String(n).padStart(6,'0')==='000000'||String(n).padStart(6,'0')==='888888'||String(n).padStart(6,'0')==='777777'||/[0-9](?:\\1){5}/.test(String(n).padStart(6,'0')))?'SECRET':tierFor(score),tierIndex=Math.max(0,rarityTiers.findIndex(t=>t.name===tierName)),tier=rarityTiers[tierIndex];
  const modal=$('rollModal'),overlay=$('rollOverlay'),db=$('overlayDigits');
  modal.style.setProperty('--overlay-color',tier.color);modal.style.setProperty('--overlay-glow',tier.glow);
  $('overlayKicker').textContent='UNLIMITED ROLL';$('overlayTitle').textContent='Rolling for rarity...';$('overlaySub').textContent='Watch the numbers spin...';$('overlayOrb').textContent='🎲';$('overlayRarity').textContent='ROLLING';$('overlayRarity').style.color='#e7edf5';$('overlayPoints').textContent='Calculating your score...';$('overlayBadges').innerHTML='';$('overlayClose').disabled=true;$('overlayClose').textContent='Rolling...';
