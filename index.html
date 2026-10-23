@@ -340,38 +340,6 @@ function bootSavedProgress(){
 }
 
 
-const rarityTiers=[
- {name:'COMMON',min:0,max:74,range:'0–74 points',color:'#aab3c0',glow:'#aab3c066',orb:'⚪',desc:'A normal roll. The first step on a much longer hunt.'},
- {name:'UNCOMMON',min:75,max:124,range:'75–124 points',color:'#69ed91',glow:'#69ed9188',orb:'🟢',desc:'A few interesting traits line up.'},
- {name:'RARE',min:125,max:224,range:'125–224 points',color:'#49baff',glow:'#49baff99',orb:'🔵',desc:'A meaningful combination of number properties.'},
- {name:'EPIC',min:225,max:349,range:'225–349 points',color:'#c27aff',glow:'#c27aff99',orb:'🟣',desc:'Several strong patterns combine in one roll.'},
- {name:'LEGENDARY',min:350,max:499,range:'350–499 points',color:'#ffbd4a',glow:'#ffbd4a99',orb:'🟠',desc:'A rare stack of valuable number properties.'},
- {name:'MYTHICAL',min:500,max:Infinity,range:'500+ points',color:'#ff6fd8',glow:'#ff6fd8aa',orb:'🌈',desc:'The highest tier, reserved for exceptional combinations.'},
- 
-];
-let rarityIndex=0,rarityTimer=null;
-function showRarity(i){
- rarityIndex=(i+rarityTiers.length)%rarityTiers.length;
- const t=rarityTiers[rarityIndex],stage=$('rarityStage');
- stage.style.setProperty('--tier-color',t.color);stage.style.setProperty('--tier-glow',t.glow);
- stage.classList.remove('reveal');void stage.offsetWidth;stage.classList.add('reveal');
- $('rarityOrb').textContent=t.orb;$('rarityName').textContent=t.name;$('rarityName').style.color=t.color;
- $('rarityPoints').textContent=t.range;$('rarityDesc').textContent=t.desc;
- $('rarityMeter').style.width=((rarityIndex+1)/rarityTiers.length*100)+'%';$('rarityMeter').style.background=t.color;
- $('rarityDots').innerHTML=rarityTiers.map((x,j)=>`<button aria-label="${x.name}" title="${x.name}" class="${j===rarityIndex?'active':''}" style="--tier-color:${t.color};--tier-glow:${t.glow}" data-tier="${j}"></button>`).join('');
- $('tierList').innerHTML=rarityTiers.map((x,j)=>`<button class="tier-chip ${j===rarityIndex?'selected':''}" data-tier="${j}" style="--chip-color:${x.color}"><strong>${x.orb} ${x.name}</strong><span>${x.range}</span></button>`).join('');
- document.querySelectorAll('[data-tier]').forEach(el=>el.addEventListener('click',()=>{stopRarityAnimation();showRarity(Number(el.dataset.tier));$('rarityPlay').textContent='▶ Play animation'}));
-}
-function stopRarityAnimation(){if(rarityTimer){clearInterval(rarityTimer);rarityTimer=null}}
-$('rarityPrev').addEventListener('click',()=>{stopRarityAnimation();showRarity(rarityIndex-1);$('rarityPlay').textContent='▶ Play animation'});
-$('rarityNext').addEventListener('click',()=>{stopRarityAnimation();showRarity(rarityIndex+1);$('rarityPlay').textContent='▶ Play animation'});
-$('rarityPlay').addEventListener('click',()=>{
- if(rarityTimer){stopRarityAnimation();$('rarityPlay').textContent='▶ Play animation';return}
- showRarity(0);$('rarityPlay').textContent='Ⅱ Pause animation';
- rarityTimer=setInterval(()=>{if(rarityIndex>=rarityTiers.length-1){stopRarityAnimation();$('rarityPlay').textContent='↻ Replay animation';return}showRarity(rarityIndex+1)},1500);
-});
-showRarity(0);
-
 let rolls=0,best=0,found=new Set(),history=[],rollingNow=false,equippedTitle='';
 const isPrime=n=>{if(n<2)return false;if(n%2===0)return n===2;for(let i=3;i*i<=n;i+=2)if(n%i===0)return false;return true};
 function analyze(n){
