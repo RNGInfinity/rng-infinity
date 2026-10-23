@@ -70,11 +70,12 @@ footer{text-align:center;color:#626c7d;font-size:11px;margin-top:45px}
 </div>
 
 <div class="roll-overlay" id="rollOverlay" role="dialog" aria-modal="true" aria-label="Roll result"><div class="roll-modal" id="rollModal" style="--overlay-color:#a7f36b;--overlay-glow:#a7f36b55"><div class="overlay-kicker" id="overlayKicker">GENERATING YOUR ROLL</div><div class="overlay-title" id="overlayTitle">Rolling...</div><p class="overlay-sub" id="overlaySub">Let's see what fate has in store.</p><div class="overlay-digits" id="overlayDigits"></div><div class="overlay-rarity-orb" id="overlayOrb">🎲</div><div class="overlay-rarity" id="overlayRarity">ROLLING</div><div class="overlay-points" id="overlayPoints">Calculating...</div><div class="overlay-badges" id="overlayBadges"></div><button class="overlay-close" id="overlayClose" disabled>Rolling...</button></div></div><div class="wrap">
-  <nav class="nav"><div class="brand">RNG<span>∞</span></div><div class="nav-profile"><div class="discord-nav"><button class="discord-join" id="discordJoin" type="button" disabled title="Discord invite coming soon">Join Discord</button><span class="discord-soon">COMING SOON</span></div><div class="pill">∞ UNLIMITED MODE</div><button class="profile-trigger" id="profileOpen" aria-label="Open account settings"><span class="avatar-fallback" id="navAvatar">👤</span><span id="navUsername">Account</span> ⚙</button></div></nav>
+  <nav class="nav"><div class="brand">RNG<span>∞</span></div><div class="nav-profile"><div class="discord-nav"><button class="discord-join" id="discordJoin" type="button" disabled title="Discord invite coming soon">Join Discord</button><span class="discord-soon">COMING SOON</span></div><div class="pill">∞ UNLIMITED MODE</div><button class="profile-trigger" id="profileOpen" aria-label="Open account settings"><span class="avatar-fallback" id="navAvatar">👤</span><span style="display:flex;flex-direction:column;align-items:flex-start;line-height:1.2"><span id="navUsername">Account</span><small id="navEquippedTitle" style="color:var(--accent);font-size:10px"></small></span> ⚙</button></div></nav>
   
 <div class="profile-modal" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileTitle"><div class="profile-card">
  <button class="profile-close" id="profileClose">✕ Close</button><h2 id="profileTitle">⚙ Account settings</h2><p class="muted-note">Manage your profile for this browser account.</p>
- <div class="profile-preview"><span class="avatar-fallback" id="profileAvatarPreview">👤</span><div><strong id="profileNameLabel">Player</strong><div class="muted-note">Profile picture</div></div></div>
+ <div class="profile-preview"><span class="avatar-fallback" id="profileAvatarPreview">👤</span><div><strong id="profileNameLabel">Player</strong><div class="muted-note">Profile picture</div><div id="profileEquippedTitle" style="color:var(--accent);font-size:12px"></div></div></div>
+ <section style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:#171e29"><strong>🏷️ Equip a title</strong><p class="muted-note" style="margin:5px 0 10px">Unlock titles by discovering badges. Your equipped title appears under your username.</p><div id="titleOptions" style="display:flex;flex-wrap:wrap;gap:7px"></div><p id="titleStatus" class="muted-note" style="margin:9px 0 0"></p></section>
  <label for="avatarUpload" class="muted-note">Upload any photo from your device</label><input id="avatarUpload" type="file" accept="image/*" style="display:block;max-width:100%;margin:7px 0 14px">
  <div class="account-form"><input id="newUsername" maxlength="18" placeholder="New username (optional)" autocomplete="username"><input id="newPasscode" type="password" maxlength="64" placeholder="New passcode (optional)" autocomplete="new-password"></div>
  <div class="coming-soon-panel" style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:#171e29"><strong>✨ Avatar Decorations <span style="color:var(--accent)">· COMING SOON</span></strong><p class="muted-note" style="margin:6px 0 0">Soon you’ll be able to choose and equip decorations you own from the shop.</p><button type="button" disabled style="margin-top:9px;opacity:.65;cursor:not-allowed">Choose avatar decoration · Coming soon</button></div><div class="account-actions"><button class="primary" id="saveProfile">Save account changes</button><button id="clearAvatar">Remove photo</button><button id="profileLogout">Log out</button></div><div class="profile-status" id="profileStatus" aria-live="polite"></div>
@@ -160,12 +161,13 @@ let xp=0,coins=0,freeSpins=0,wheelSpinsUsed=0,chain=0,lastRollAt=0,ownedItems=[]
 let autoRollEnabled=false,autoRollTimer=null, activeUsername=null, activeBoard='rolls', playSessionStarted=Date.now(), playtimeTimer=null;
 function safeRead(key,fallback){try{const v=JSON.parse(localStorage.getItem(key));return v??fallback}catch{return fallback}}
 function saveGame(){
- const data={rolls,best,bestRollNumber,found:[...found],history,topRolls,autoRollEnabled,xp,coins,freeSpins,wheelSpinsUsed,chain,lastRollAt,ownedItems,speedBoost,luckBoost,potions,activePotions};
+ const data={rolls,best,bestRollNumber,found:[...found],history,topRolls,autoRollEnabled,xp,coins,freeSpins,wheelSpinsUsed,chain,lastRollAt,ownedItems,speedBoost,luckBoost,potions,activePotions,equippedTitle};
  try{localStorage.setItem(SAVE_KEY,JSON.stringify(data))}catch{}
- if(activeUsername){const users=safeRead(USERS_KEY,{});if(users[activeUsername]){users[activeUsername].avatar=avatarData;users[activeUsername].stats={rolls,best,bestRollNumber,found:[...found],history,topRolls,autoRollEnabled,xp,coins,freeSpins,wheelSpinsUsed,chain,lastRollAt,ownedItems,speedBoost,luckBoost,potions,activePotions,playTime:Number(users[activeUsername].stats?.playTime)||0};try{localStorage.setItem(USERS_KEY,JSON.stringify(users))}catch{}}}
+ if(activeUsername){const users=safeRead(USERS_KEY,{});if(users[activeUsername]){users[activeUsername].avatar=avatarData;users[activeUsername].equippedTitle=equippedTitle;users[activeUsername].stats={rolls,best,bestRollNumber,found:[...found],history,topRolls,autoRollEnabled,xp,coins,freeSpins,wheelSpinsUsed,chain,lastRollAt,ownedItems,speedBoost,luckBoost,potions,activePotions,equippedTitle,playTime:Number(users[activeUsername].stats?.playTime)||0};try{localStorage.setItem(USERS_KEY,JSON.stringify(users))}catch{}}}
  updateAutoRollUI();renderLeaderboard();
 }
 function restoreStats(data){
+ equippedTitle=typeof data?.equippedTitle==='string'?data.equippedTitle:'';
  rolls=Number(data?.rolls)||0;best=Number(data?.best)||0;bestRollNumber=data?.bestRollNumber??(Array.isArray(data?.topRolls)?data.topRolls.find(r=>Number(r.score)===best)?.n:null)??(Array.isArray(data?.history)?data.history.find(r=>Number(r.score)===best)?.n:null);found=new Set(data?.found||[]);history=Array.isArray(data?.history)?data.history.slice(0,8):[];topRolls=Array.isArray(data?.topRolls)?data.topRolls.slice().sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0)).slice(0,10):[];autoRollEnabled=!!data?.autoRollEnabled;xp=Number(data?.xp)||0;coins=Number(data?.coins)||0;wheelSpinsUsed=Math.max(0,Math.floor(Number(data?.wheelSpinsUsed)||0));freeSpins=data&&data.freeSpins!==undefined?Math.max(0,Math.floor(Number(data.freeSpins)||0)):Math.max(0,levelFromXP(xp)-wheelSpinsUsed);chain=Number(data?.chain)||0;lastRollAt=Number(data?.lastRollAt)||0;ownedItems=Array.isArray(data?.ownedItems)?data.ownedItems:[];speedBoost=!!data?.speedBoost;luckBoost=!!data?.luckBoost;potions={luck:0,haste:0,coins:0,...(data?.potions||{})};activePotions={luck:0,haste:0,coins:0,...(data?.activePotions||{})};updateProgressUI();
  $('rolls').textContent=rolls;$('best').textContent=best||'—';$('badgesCount').textContent=found.size;renderHistory();renderTopRolls();updateAutoRollUI();
 }
@@ -176,6 +178,7 @@ async function hashPasscode(passcode){
  return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 function setAccountStatus(message,isError=false){$('accountStatus').textContent=message;$('accountStatus').style.color=isError?'#ff8585':'var(--accent)'}
+function renderTitleOptions(){const el=$('titleOptions');if(!el)return;const available=[...found].sort((a,b)=>a.localeCompare(b));const titles=[{name:'None',value:''},...available.map(name=>({name,value:name}))];el.innerHTML=titles.map(t=>'<button type="button" data-title="'+escapeHtml(t.value)+'" style="font-size:12px;'+(equippedTitle===t.value?'border-color:var(--accent);color:var(--accent)':'')+'">'+(t.value?escapeHtml(t.value):'No title')+(equippedTitle===t.value?' ✓':'')+'</button>').join('');el.querySelectorAll('[data-title]').forEach(btn=>btn.addEventListener('click',()=>{equippedTitle=btn.dataset.title||'';saveGame();updateAccountUI();renderTitleOptions();$('titleStatus').textContent=equippedTitle?'Equipped: '+equippedTitle:'Title removed.'}));if(!available.length)el.innerHTML='<span class="muted-note">Discover badges by rolling to unlock titles!</span>'}
 function updateAccountUI(){
  const signed=!!activeUsername;$('accountSignedOut').hidden=signed;$('accountSignedIn').hidden=!signed;
  $('accountWelcome').textContent=signed?`Signed in as ${activeUsername} · ${rolls} rolls · best ${best||0} points`:'';
@@ -183,7 +186,7 @@ function updateAccountUI(){
  const avatar=$('navAvatar'),preview=$('profileAvatarPreview');
  if(avatarData){avatar.innerHTML='<img alt="Profile picture" src="'+avatarData+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';preview.innerHTML='<img alt="Profile picture" src="'+avatarData+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';}
  else{avatar.textContent='👤';preview.textContent='👤';}
- $('profileNameLabel').textContent=activeUsername||'Player';
+ $('profileNameLabel').textContent=activeUsername||'Player';$('navEquippedTitle').textContent=signed&&equippedTitle?equippedTitle:'';$('profileEquippedTitle').textContent=equippedTitle?'🏷️ '+equippedTitle:'';renderTitleOptions();
 }
 async function createAccount(){
  const name=$('accountUsername').value.trim(),pass=$('accountPasscode').value;
@@ -191,7 +194,7 @@ async function createAccount(){
  if(pass.length<4){setAccountStatus('Passcode must be at least 4 characters.',true);return}
  const users=safeRead(USERS_KEY,{});
  if(users[name.toLowerCase()]){setAccountStatus('That username already exists in this browser.',true);return}
- users[name.toLowerCase()]={username:name,passHash:await hashPasscode(pass),stats:{rolls:0,best:0,found:[],history:[],autoRollEnabled:false}};
+ users[name.toLowerCase()]={username:name,passHash:await hashPasscode(pass),equippedTitle:'',stats:{rolls:0,best:0,found:[],history:[],autoRollEnabled:false,equippedTitle:''}};
  localStorage.setItem(USERS_KEY,JSON.stringify(users));activeUsername=name.toLowerCase();avatarData=users[activeUsername].avatar||'';localStorage.setItem(SESSION_KEY,activeUsername);
  restoreStats(users[activeUsername].stats);updateAccountUI();setAccountStatus('Account created. Your progress will save in this browser.');saveGame();$('authGate').hidden=true;$('gatePasscode').value='';
 }
@@ -219,7 +222,7 @@ async function loginAccount(){
  const name=$('accountUsername').value.trim().toLowerCase(),pass=$('accountPasscode').value,users=safeRead(USERS_KEY,{});
  migrateLegacyProgress(users);
  if(!users[name]||users[name].passHash!==await hashPasscode(pass)){setAccountStatus('Username or passcode is incorrect for this browser.',true);return}
- activeUsername=name;avatarData=users[name].avatar||'';localStorage.setItem(SESSION_KEY,name);restoreStats(users[name].stats);updateAccountUI();setAccountStatus('Welcome back! Your saved progress has been loaded.');renderLeaderboard();$('authGate').hidden=true;$('gatePasscode').value='';
+ activeUsername=name;avatarData=users[name].avatar||'';localStorage.setItem(SESSION_KEY,name);restoreStats({...users[name].stats,equippedTitle:users[name].equippedTitle||users[name].stats?.equippedTitle||''});updateAccountUI();setAccountStatus('Welcome back! Your saved progress has been loaded.');renderLeaderboard();$('authGate').hidden=true;$('gatePasscode').value='';
 }
 function logoutAccount(){saveGame();avatarData='';clearInterval(autoRollTimer);autoRollTimer=null;activeUsername=null;localStorage.removeItem(SESSION_KEY);restoreStats({rolls:0,best:0,found:[],history:[],autoRollEnabled:false});updateAccountUI();setAccountStatus('Please sign in to continue.');$('authGate').hidden=false;$('gateUsername').focus()}
 function levelFromXP(value=xp){return Math.floor(Math.sqrt(Math.max(0,value)/25))+1}
@@ -327,7 +330,7 @@ $('rarityPlay').addEventListener('click',()=>{
 });
 showRarity(0);
 
-let rolls=0,best=0,found=new Set(),history=[],rollingNow=false;
+let rolls=0,best=0,found=new Set(),history=[],rollingNow=false,equippedTitle='';
 const isPrime=n=>{if(n<2)return false;if(n%2===0)return n===2;for(let i=3;i*i<=n;i+=2)if(n%i===0)return false;return true};
 function analyze(n){
  const s=String(n), d=[...s].map(Number), sum=d.reduce((a,b)=>a+b,0), out=[];
