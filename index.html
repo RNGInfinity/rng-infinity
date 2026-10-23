@@ -53,6 +53,9 @@ footer{text-align:center;color:#626c7d;font-size:11px;margin-top:45px}
 
 
 .section button:not(.roll),.progression-panel button,.how button,#wheelSpin{background:#202735;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 13px;cursor:pointer;font-weight:800;box-shadow:none}.section button:not(.roll):hover,.how button:hover,#wheelSpin:hover{background:#293344;border-color:#596579}.section button.primary,#wheelSpin.primary,.section .leader-tab.active{background:var(--accent);color:#111710;border-color:var(--accent)}.section .leader-tabs button.leader-tab{background:transparent;color:var(--muted);border:0;border-radius:8px;padding:10px 7px;box-shadow:none}.section .leader-tabs button.leader-tab.active{background:var(--accent);color:#111710}.leader-tabs{display:flex;gap:8px;margin:0 0 14px;padding:5px;background:#090d13;border:1px solid var(--line);border-radius:12px}.leader-tab{flex:1;border:0;border-radius:8px;padding:10px 7px;background:transparent;color:var(--muted);font-weight:800;cursor:pointer}.leader-tab.active{background:var(--accent);color:#111710}.leader-score .exact-points{font-size:16px;font-weight:950;display:block}.leader-score small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+
+/* Mobile-game style swipeable sections */
+.mobile-game-tabs{display:flex;gap:8px;overflow-x:auto;padding:10px 2px 12px;margin:0 0 16px;position:sticky;top:0;z-index:20;background:rgba(11,13,18,.94);backdrop-filter:blur(12px);scrollbar-width:none;border-bottom:1px solid var(--line)}.mobile-game-tabs::-webkit-scrollbar{display:none}.mobile-game-tabs button{flex:0 0 auto;white-space:nowrap;border-radius:999px;padding:10px 14px;font-size:12px}.mobile-game-tabs button.active{background:var(--accent);color:#111710;border-color:var(--accent)}[data-game-page]{animation:tabFade .16s ease}@keyframes tabFade{from{opacity:.65;transform:translateX(5px)}to{opacity:1;transform:translateX(0)}}.badge-collection{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.badge-tile{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px;min-width:0}.badge-tile.owned{border-color:#526c43}.badge-tile strong{display:block;overflow-wrap:anywhere}.badge-tile small{display:block;color:var(--muted);margin:5px 0 10px}.badge-tile button{width:100%;font-size:12px}.badge-count{color:var(--accent);font-size:12px;font-weight:800}@media(max-width:600px){.wrap{padding:12px 12px 40px}.mobile-game-tabs{margin-left:-2px;margin-right:-2px}.hero{padding:16px 0 18px}.nav{padding-bottom:16px}}
 </style>
 </head>
 <body>
@@ -81,8 +84,11 @@ footer{text-align:center;color:#626c7d;font-size:11px;margin-top:45px}
  <div class="coming-soon-panel" style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;background:#171e29"><strong>✨ Avatar Decorations <span style="color:var(--accent)">· COMING SOON</span></strong><p class="muted-note" style="margin:6px 0 0">Soon you’ll be able to choose and equip decorations you own from the shop.</p><button type="button" disabled style="margin-top:9px;opacity:.65;cursor:not-allowed">Choose avatar decoration · Coming soon</button></div><div class="account-actions"><button class="primary" id="saveProfile">Save account changes</button><button id="clearAvatar">Remove photo</button><button id="profileLogout">Log out</button></div><div class="profile-status" id="profileStatus" aria-live="polite"></div>
  <p class="muted-note">This version stores profiles and photos in this browser. Changes do not sync to other devices.</p>
  </div></div>
+<div class="mobile-game-tabs" id="mobileGameTabs" role="tablist" aria-label="Game tabs"><button type="button" class="active" data-game-tab="play" role="tab" aria-selected="true">🎲 Play</button><button type="button" data-game-tab="shop" role="tab" aria-selected="false">🛍️ Shop</button><button type="button" data-game-tab="leaderboard" role="tab" aria-selected="false">🏆 Leaderboards</button><button type="button" data-game-tab="badges" role="tab" aria-selected="false">🏅 Badges</button><button type="button" data-game-tab="history" role="tab" aria-selected="false">📜 History</button></div>
 <header class="hero"><div class="eyebrow">Your luck. Your rules.</div><h1>Roll again.<br><em>And again.</em></h1><p>A little number, a lot of possibilities. Generate numbers, uncover patterns, collect points — there’s no daily limit here.</p></header>
   <main>
+<section class="section" id="badgeCollectionPanel" data-game-page="badges" hidden><div class="section-title"><h2>🏅 Badge collection</h2><span class="badge-count" id="badgeCollectionCount">0 unlocked</span></div><p class="muted-note">Every badge you discover can become your title. Equip one here and it appears under your username. Your collection is saved with this browser profile.</p><div id="badgeCollection" class="badge-collection"></div><p class="muted-note" id="badgeCollectionStatus" aria-live="polite"></p></section>
+
     <section class="game" aria-label="Unlimited number roller">
       <div class="game-top"><span class="live"><i class="dot"></i> FREE PLAY · READY WHEN YOU ARE</span><span>0 — 1,000,000</span></div>
       <div class="number" id="number" aria-live="polite"><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span></div>
@@ -178,6 +184,42 @@ async function hashPasscode(passcode){
  return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 function setAccountStatus(message,isError=false){$('accountStatus').textContent=message;$('accountStatus').style.color=isError?'#ff8585':'var(--accent)'}
+
+function renderBadgeCollection(){
+ const el=$('badgeCollection');if(!el)return;
+ const available=[...found].sort((a,b)=>a.localeCompare(b));
+ $('badgeCollectionCount').textContent=available.length+' unlocked';
+ if(!available.length){el.innerHTML='<div class="empty">No badges yet. Roll numbers to discover badges, then equip them here!</div>';return;}
+ el.innerHTML=available.map(name=>'<article class="badge-tile owned"><strong>🏅 '+escapeHtml(name)+'</strong><small>'+ (equippedTitle===name?'Currently equipped title':'Unlocked badge · usable as title')+'</small><button type="button" data-equip-badge="'+escapeHtml(name)+'">'+(equippedTitle===name?'✓ Equipped':'Equip title')+'</button></article>').join('')+'<article class="badge-tile"><strong>🚫 No title</strong><small>Show your username without a title.</small><button type="button" data-equip-badge="">Unequip title</button></article>';
+ el.querySelectorAll('[data-equip-badge]').forEach(btn=>btn.addEventListener('click',()=>{equippedTitle=btn.dataset.equipBadge||'';saveGame();updateAccountUI();renderBadgeCollection();$('badgeCollectionStatus').textContent=equippedTitle?'Equipped "'+equippedTitle+'" under your username.':'Your title has been unequipped.';}));
+}
+function setGameTab(tab,focus=true){
+ const tabs=[...document.querySelectorAll('[data-game-tab]')];if(!tabs.some(b=>b.dataset.gameTab===tab))return;
+ tabs.forEach(b=>{const active=b.dataset.gameTab===tab;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
+ document.querySelectorAll('[data-game-page]').forEach(el=>{el.hidden=el.dataset.gamePage!==tab;});
+ document.querySelectorAll('main > section').forEach(el=>{if(el.id==='badgeCollectionPanel')return;const page=el.dataset.gamePage||'play';el.hidden=page!==tab;});
+ if(tab==='badges')renderBadgeCollection();
+ if(focus)$('mobileGameTabs')?.querySelector('[data-game-tab="'+tab+'"]')?.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
+function initGameTabs(){
+ const pages=[...document.querySelectorAll('main > section')];
+ pages.forEach((el,i)=>{
+  if(el.id==='badgeCollectionPanel'){el.dataset.gamePage='badges';return;}
+  if(el.id==='progressionPanel')el.dataset.gamePage='shop';
+  else if(el.classList.contains('leaderboard-panel'))el.dataset.gamePage='leaderboard';
+  else if(el.id==='topRolls'||el.id==='history')el.dataset.gamePage='history';
+  else if(el.querySelector('#topRolls')||el.querySelector('#history'))el.dataset.gamePage='history';
+  else el.dataset.gamePage='play';
+ });
+ // The combined history section is split into individual sections in the markup.
+ const top=$('topRolls')?.closest('section');if(top)top.dataset.gamePage='history';
+ const recent=$('history')?.closest('section');if(recent)recent.dataset.gamePage='history';
+ $('mobileGameTabs')?.querySelectorAll('[data-game-tab]').forEach(btn=>btn.addEventListener('click',()=>setGameTab(btn.dataset.gameTab)));
+ let sx=0,sy=0;
+ document.addEventListener('touchstart',e=>{if(e.touches.length===1){sx=e.touches[0].clientX;sy=e.touches[0].clientY;}},{passive:true});
+ document.addEventListener('touchend',e=>{if(!sx||!e.changedTouches.length)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;sx=0;if(Math.abs(dx)<75||Math.abs(dx)<Math.abs(dy)*1.25)return;const order=['play','shop','leaderboard','badges','history'];const active=document.querySelector('[data-game-tab].active')?.dataset.gameTab||'play';const idx=order.indexOf(active);const next=order[Math.max(0,Math.min(order.length-1,idx+(dx<0?1:-1)))];if(next!==active)setGameTab(next);},{passive:true});
+ setGameTab('play',false);
+}
 function renderTitleOptions(){const el=$('titleOptions');if(!el)return;const available=[...found].sort((a,b)=>a.localeCompare(b));const titles=[{name:'None',value:''},...available.map(name=>({name,value:name}))];el.innerHTML=titles.map(t=>'<button type="button" data-title="'+escapeHtml(t.value)+'" style="font-size:12px;'+(equippedTitle===t.value?'border-color:var(--accent);color:var(--accent)':'')+'">'+(t.value?escapeHtml(t.value):'No title')+(equippedTitle===t.value?' ✓':'')+'</button>').join('');el.querySelectorAll('[data-title]').forEach(btn=>btn.addEventListener('click',()=>{equippedTitle=btn.dataset.title||'';saveGame();updateAccountUI();renderTitleOptions();$('titleStatus').textContent=equippedTitle?'Equipped: '+equippedTitle:'Title removed.'}));if(!available.length)el.innerHTML='<span class="muted-note">Discover badges by rolling to unlock titles!</span>'}
 function updateAccountUI(){
  const signed=!!activeUsername;$('accountSignedOut').hidden=signed;$('accountSignedIn').hidden=!signed;
@@ -430,6 +472,8 @@ $('roll').addEventListener('click',roll);
 $('overlayClose').addEventListener('click',()=>{if(rollingNow)return;if(autoRollEnabled)stopAutoRoll();$('rollOverlay').classList.remove('open');document.body.style.overflow=''});
 $('clear').addEventListener('click',()=>{history=[];renderHistory()});
 bootSavedProgress();
+
+initGameTabs();
 </script>
 <!-- Production redeploy trigger: keep the live site aligned with the latest main branch features. -->
 </body>
