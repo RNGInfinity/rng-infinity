@@ -92,7 +92,7 @@ footer{text-align:center;color:#626c7d;font-size:11px;margin-top:45px}
     <section class="game" aria-label="Unlimited number roller">
       <div class="game-top"><span class="live"><i class="dot"></i> FREE PLAY · READY WHEN YOU ARE</span><span>0 — 1,000,000</span></div>
       <div class="number" id="number" aria-live="polite"><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span><span class="digit blank">?</span></div>
-      <button class="roll" id="roll">🎲 &nbsp; ROLL A NUMBER</button>
+      <button class="roll" id="roll" type="button" onclick="try{roll()}catch(e){console.error(e);alert('Roll error: '+e.message)}">🎲 &nbsp; ROLL A NUMBER</button>
       <div class="subnote">Unlimited rolls · No sign-up · Just for fun</div>
       <div class="stats"><div class="stat"><b id="rolls">0</b><span>TOTAL ROLLS</span></div><div class="stat"><b id="best">—</b><span>BEST SCORE</span></div><div class="stat"><b id="badgesCount">0</b><span>BADGES FOUND</span></div></div>
       <div class="result" id="result"><div class="result-head"><h2 id="resultTitle">Your roll</h2><span class="tier" id="tier">COMMON</span></div><div class="badges" id="badges"></div></div>
@@ -426,6 +426,6 @@ bootSavedProgress();
 
 initGameTabs();
 </script>
-<!-- Production redeploy trigger: keep the live site aligned with the latest main branch features. -->
+<!-- Production redeploy trigger: keep the live site aligned with the latest main branch features. Roll button fallback enabled. -->
 </body>
 </html>
