@@ -317,8 +317,8 @@ function bootSavedProgress(){
  restoreStats({rolls:0,best:0,found:[],history:[],autoRollEnabled:false});
  updateAccountUI();
  setAccountStatus('Sign in to load your profile.');
- $('authGate').hidden=false;
- $('gateUsername').focus();
+ // Rolling is available to guests; signing in is optional for a named local profile.
+ $('authGate').hidden=true;
  renderLeaderboard();
 }
 
@@ -405,7 +405,6 @@ function tierFor(score){if(score>=1001)return'SECRET';if(score>=500)return'MYTHI
 function renderNumber(n){$('number').innerHTML=String(n).padStart(6,'0').split('').map(x=>`<span class="digit">${x}</span>`).join('')}
 function getRandomRoll(){const max=1000001;if(!globalThis.crypto?.getRandomValues)return Math.floor(Math.random()*max);const arr=new Uint32Array(1),limit=Math.floor(4294967296/max)*max;let x;do{crypto.getRandomValues(arr);x=arr[0]}while(x>=limit);return x%max}
 function roll(){
- if(!activeUsername){$('authGate').hidden=false;setGateStatus('Please sign in before rolling.',true);return}
  if(rollingNow)return;rollingNow=true;
  const chainMultiplier=awardRollProgress();
  const n=getRandomRoll(),badges=analyze(n),baseScore=badges.reduce((a,b)=>a+b.pts,0),isSecretTriple=['000000','888888','777777'].includes(String(n).padStart(6,'0')),isSixRun=/(.)\1{5}/.test(String(n).padStart(6,'0')),score=isSecretTriple?({'000000':1200,'888888':1400,'777777':1600}[String(n).padStart(6,'0')]):isSixRun?Math.max(1000,Math.round(baseScore*chainMultiplier)):Math.round(baseScore*chainMultiplier),tierName=(isSecretTriple||isSixRun)?'SECRET':tierFor(score),tierIndex=Math.max(0,rarityTiers.findIndex(t=>t.name===tierName)),tier=rarityTiers[tierIndex];
